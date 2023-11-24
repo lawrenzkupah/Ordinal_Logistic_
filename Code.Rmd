@@ -1,0 +1,265 @@
+---
+title: "Ordinal Model Code"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(ggplot2)
+require(psych)
+require(MASS)
+require(stargazer)
+require(reshape2)
+require(Hmisc)
+require(readr)
+require(RColorBrewer)
+panel <- read_csv("/Users/cooperlawrenz/Documents/School Fall 2023/Thesis/Data/Extract Aug 1 2023/panel.csv")
+panel.2 <- panel[, names(panel) %in% c("INCTOT","FTOTINCMEPS","YEAR","REGIONMEPS","SEX","MARSTAT","HEALTH",
+                                       "EDUC","SMOKENOW","RACEA","CANCEREV","INTERVLANG","FAMSIZE","ANERVOUS",
+                                       "fracfamInc","capGains","fraccapgains","PHQDEP","AHOPELESS","ASAD","AWORTHLESS","AEFFORT","ARESTLESS","PHQINTR")]
+panel.2 <- na.omit(panel.2)
+```
+
+Let panel be any given DF. A theory of causality between income and depression (PHQDEP) is being formed here. for background, PHQDEP is a depression survey which ranks peoples severity of symptoms from 0 to 3. larger numbers here imply greater depressive symptoms.
+```{r Plots}
+#Creation of bar plots comparing income and PHQDEP scores
+panel.A <- subset(panel, !is.na(panel$PHQDEP))
+plot.1 <- ggplot(panel.A, aes(x = as.factor(PHQDEP), y = INCTOT, fill = as.factor(PHQDEP))) +
+  geom_boxplot(size = .5,outlier.shape = NA) +
+  coord_cartesian(ylim=c(-50, 150)) +
+  theme_classic() +
+  labs( x = "Depression Score", y = " Personal Total Yearly Income In Thousands USD (Base Year - 2009)", title = "Figure 1",subtitle = "Hypothesized Relationship Between Income and Depression",caption  = "Note: Outliers Omitted",fontface="italic") +
+  theme(
+       title = element_text(family = "sans",size = 12),
+       axis.title.x = element_text(family = "sans",size = 9,face = "italic"),
+       axis.title.y = element_text(family = "sans",size = 9,face = "italic"),
+       plot.subtitle = element_text(family = "sans",size = 9,face = "italic"),
+       plot.caption = element_text(family = "sans",size = 9,hjust = 0))+
+  scale_fill_brewer(palette="PuBu",breaks = "PHQDEP") 
+plot.1
+
+plot.2 <- ggplot(panel.A, aes(x = as.factor(PHQDEP), y = FTOTINCMEPS, fill = as.factor(PHQDEP))) +
+  geom_boxplot(size = .5,outlier.shape = NA) +
+  coord_cartesian(ylim=c(-50, 150)) +
+  theme_classic() +
+  labs( x = "Depression Score", y = " Personal Total Yearly Income In Thousands USD (Base Year - 2009)", title = "Figure 2",subtitle = "Hypothesized Relationship Between Family Income and Depression",caption  = "Note: Outliers Omitted",fontface="italic") +
+  theme(
+    title = element_text(family = "sans",size = 12),
+    axis.title.x = element_text(family = "sans",size = 9,face = "italic"),
+    axis.title.y = element_text(family = "sans",size = 9,face = "italic"),
+    plot.subtitle = element_text(family = "sans",size = 9,face = "italic"),
+    plot.caption = element_text(family = "sans",size = 9,hjust = 0))+
+  scale_fill_brewer(palette="PuBu",breaks = "PHQDEP")
+plot.2
+```
+Formatting data into the right types, of particular importance is making response variables <b>ranked</b> factors
+```{r data formating}
+# simply here to format data into right types
+panel$YEAR <- as.factor(panel$YEAR)
+panel$MEPSID <- as.factor(panel$MEPSID)
+panel$DUID <- as.factor(panel$DUID)
+panel$REGIONMEPS <- as.factor(panel$REGIONMEPS)
+panel$SEX <- as.factor(panel$SEX)
+panel$MARSTAT <- as.factor(panel$MARSTAT)
+panel$HEALTH <- as.factor(panel$HEALTH)
+panel$EDUC <- as.factor(panel$EDUC)
+panel$AEFFORT <- factor(panel$AEFFORT,levels = c(0,1,2,3,4))
+panel$AHOPELESS <- factor(panel$AHOPELESS,levels = c(0,1,2,3,4))
+panel$ANERVOUS <- factor(panel$ANERVOUS,levels = c(0,1,2,3,4))
+panel$ARESTLESS <- factor(panel$ARESTLESS,levels = c(0,1,2,3,4))
+panel$ASAD <- factor(panel$ASAD,levels = c(0,1,2,3,4))
+panel$AWORTHLESS <- factor(panel$AWORTHLESS,levels = c(0,1,2,3,4))
+panel$PHQINTR <- factor(panel$PHQINTR,levels = c(0,1,2,3))
+panel$PHQDEP <- factor(panel$PHQDEP,levels = c(0,1,2,3))
+panel$SMOKENOW <- as.factor(panel$SMOKENOW)
+panel$RACEA <- as.factor(panel$RACEA)
+panel$OCCCATRD <- as.factor(panel$OCCCATRD) #Maybe dont use b/c of DF loss
+panel$CANCEREV <- as.factor(panel$CANCEREV)
+panel$INSULIN <- as.factor(panel$INSULIN)
+panel$INTERVLANG <- as.factor(panel$INTERVLANG)
+
+```
+Here shows initial fitting of ordinal logit w/o controls 
+```{r model .5}
+QDEP.2 <- polr(PHQDEP ~ INCTOT, data = panel, Hess = TRUE)
+summary(QDEP.2)
+
+AEFT.2 <- polr(AEFFORT ~ INCTOT, data = panel, Hess = TRUE)
+
+AHOPS.2 <- polr(AHOPELESS ~ INCTOT, data = panel, Hess = TRUE)
+
+ARES.2 <- polr(ARESTLESS ~ INCTOT, data = panel, Hess = TRUE)
+
+ASAD.2 <- polr(ASAD ~ INCTOT, data = panel, Hess = TRUE)
+
+AWORS.2 <- polr(AWORTHLESS ~ INCTOT, data = panel, Hess = TRUE)
+
+QINTR.2 <- polr(PHQINTR ~ INCTOT, data = panel, Hess = TRUE)
+
+
+```
+Here shows initial fitting of the ordinal logit with controls .
+```{r Models 1}
+#Fitting of first models, no instruments are used here
+
+
+QDEP.3 <- polr(PHQDEP ~ INCTOT +  FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                  EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE +ANERVOUS,
+                  data = panel, Hess = TRUE)
+summary(QDEP.3)
+AEFT.3 <-polr(AEFFORT ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                           EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                          data = panel, Hess = TRUE)
+AHOPS.3 <-polr(AHOPELESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+ARES.3 <-polr(ARESTLESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+ASAD.3 <-polr(ASAD ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+AWORS.3 <-polr(AWORTHLESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+QINTR.3 <-polr(PHQINTR ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+```
+It is here that an instrumental variable is incorporated to minimize OVB for personal income gains, this instrument is aimed at income totals. Data with the IV is moved around to prevent polr from receiving an incomplete data set, something which it cannot deal with. 
+```{r Models 2}
+# Employing an instrument into above fitted model for Income total
+panel.2 <- panel[, names(panel) %in% c("INCTOT","FTOTINCMEPS","YEAR","REGIONMEPS","SEX","MARSTAT","HEALTH",
+                                       "EDUC","SMOKENOW","RACEA","CANCEREV","INTERVLANG","FAMSIZE","ANERVOUS",
+                                       "fracfamInc","capGains","fraccapgains","PHQDEP","AHOPELESS","ASAD","AWORTHLESS","AEFFORT","ARESTLESS","PHQINTR")]
+panel.2 <- na.omit(panel.2)
+
+fracfamincIV.1 <- lm(INCTOT ~ FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS + fracfamInc,
+                       data = panel.2)
+summary(fracfamincIV.1)
+fracfaminc.hat <- fitted.values(fracfamincIV.1)
+
+QDEP.4 <- polr(PHQDEP ~  fracfaminc.hat + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel.2, Hess = TRUE)
+summary(QDEP.4)
+AEFT.4 <-polr(AEFFORT ~  fracfaminc.hat + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+              data = panel.2, Hess = TRUE)
+AHOPS.4 <-polr(AHOPELESS ~  fracfaminc.hat + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                 EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+               data = panel.2, Hess = TRUE)
+ARES.4 <-polr(ARESTLESS ~ fracfaminc.hat + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                                EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                                data = panel.2, Hess = TRUE)
+ASAD.4 <- polr(ASAD ~  fracfaminc.hat + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                                EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                                 data = panel.2, Hess = TRUE)
+AWORS.4 <- polr(AWORTHLESS ~ fracfaminc.hat + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                              EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                            data = panel.2, Hess = TRUE)
+QINTR.4 <-polr(PHQINTR ~  fracfaminc.hat + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                 EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+               data = panel.2, Hess = TRUE)
+```
+Same as prior snippet, however this time an instrument is being used for family income gains. 
+```{r Models 3}
+#Employing an instrument into above fitted models for Family Income Totals 
+capGainsIV.1 <- lm(FTOTINCMEPS ~ INCTOT + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                       EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS + capGains,
+                     data = panel.2)
+summary(capGainsIV.1)
+capGains.hat <- fitted.values(capGainsIV.1)
+
+QDEP.5 <- polr(PHQDEP ~ INCTOT +  capGains.hat + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                 EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+               data = panel.2, Hess = TRUE)
+summary(QDEP.5)
+AEFT.5 <-polr(AEFFORT ~ INCTOT +  capGains.hat + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+              data = panel.2, Hess = TRUE)
+AHOPS.5 <-polr(AHOPELESS ~ INCTOT +  capGains.hat + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                 EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+               data = panel.2, Hess = TRUE)
+ARES.5 <-polr(ARESTLESS ~ INCTOT +  capGains.hat + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+              data = panel.2, Hess = TRUE)
+ASAD.5 <- polr(ASAD ~ INCTOT +  capGains.hat + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                 EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+               data = panel.2, Hess = TRUE)
+AWORS.5 <- polr(AWORTHLESS ~ INCTOT +  capGains.hat + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                  EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                data = panel.2, Hess = TRUE)
+QINTR.5 <-polr(PHQINTR ~ INCTOT +  capGains.hat + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                 EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+               data = panel.2, Hess = TRUE)
+
+```
+To better understand the proportional odds assumption this table is made. it computes logits at different cut-off points for both income total and family income total. perfectly passing this test would be a perfect vertical line made by each data point. Obviously, this does not occur, the question then becomes what impact does this have on the interpretation of results?
+```{r PO}
+#Creation of a proportional odds plot
+
+sf <- function(y) {
+  c('Y>=0' = qlogis(mean(y >= 0)),
+    'Y>=1' = qlogis(mean(y >= 1)),
+    'Y>=2' = qlogis(mean(y >= 2)),
+    'Y>=3' = qlogis(mean(y >= 3)))
+}
+(s <- with(panel.2, summary(PHQDEP ~ INCTOT + FTOTINCMEPS,
+                            data = panel.2, fun=sf)))
+
+s[, 4] <- s[, 4] - s[, 3]
+s[, 3] <- s[, 3] - s[, 3]
+
+ plot.3 <- plot(s, which=1:4, pch=1:4, xlab='logit', main='', xlim=range(-5,0))
+ 
+ #for the most part this is not my code see:  Ordinal Logistic Regression. UCLA: Statistical Consulting Group. from https://stats.oarc.ucla.edu/r/dae/ordinal-logistic-regression/ (accessed August 10, 2023).
+```
+A more legible way to understand proportional odds. These plots demonstrates how increases in a specific variable (income total) affect probabilities of being placed in each depression(PHQDEP) category.
+```{r Predictions}
+#Creation of a predictions plot 
+
+model.predict <- polr(PHQDEP ~ INCTOT + FTOTINCMEPS + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                        EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,data = panel.2,Hess=TRUE)
+newdat <- data.frame(
+   INCTOT = rep(seq(from = -10, to = 100, length.out = 100),4),
+   FTOTINCMEPS = rep(c(46.68)),
+   #YEAR = rep(unique(panel$YEAR), length.out = 200),
+   REGIONMEPS = rep("3"),
+   SEX = rep(c("1")),
+   MARSTAT= rep("20"),
+   HEALTH = rep("2"),
+   EDUC = rep("201"),
+   SMOKENOW = rep("1"),
+   RACEA = rep("100"),
+   CANCEREV = rep("1"),
+   INTERVLANG = rep("1"),
+   FAMSIZE = rep(2),
+   ANERVOUS = rep("0")
+)
+newdat <- cbind(newdat, predict(model.predict,newdat,type = "probs"))
+lnewdat <- melt(newdat, id.vars = c("INCTOT","FTOTINCMEPS","REGIONMEPS","SEX","MARSTAT","HEALTH","EDUC",
+                                    "SMOKENOW","RACEA","CANCEREV","INTERVLANG","FAMSIZE","ANERVOUS"), 
+                variable.name = "PHQDEP",value.name = "Probability")
+ggplot(lnewdat, aes(x= INCTOT,y = Probability,color = PHQDEP))+
+  labs(title = "Figure 5",subtitle = "Change in probability all else constant ")+
+  geom_line()+
+  theme_linedraw()+
+  scale_color_manual(values = brewer.pal(11, "RdYlBu")[c(8,9,10,11)])
+
+
+model.predict1 <- polr(PHQDEP ~ INCTOT, data = panel.2, Hess = TRUE)
+newdata.1 <- data.frame(
+  INCTOT = rep(seq(from = -10, to = 100, length.out = 100),4)
+)
+newdata.1 <- cbind(newdata.1, predict(model.predict1, newdata.1,type ="probs"))
+lnewdat <- melt(newdata.1, id.vars = "INCTOT",variable.name = "PHQDEP",value.name = "Probability")
+ggplot(lnewdat, aes(x= INCTOT,y = Probability, color = PHQDEP))+
+  labs(title = "Figure 4",subtitle = "Change in probability") +
+  geom_line()+
+  theme_linedraw()+
+  scale_color_manual(values = brewer.pal(11, "RdYlBu")[c(8,9,10,11)])
+
+ #again, for the most part this is not my code see:  Ordinal Logistic Regression. UCLA: Statistical Consulting Group. from https://stats.oarc.ucla.edu/r/dae/ordinal-logistic-regression/ (accessed August 10, 2023).
+```
+This is a very brief overview of this analysis, for a more thorough investigation, see my paper. 
