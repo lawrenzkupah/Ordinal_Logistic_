@@ -103,7 +103,21 @@ AWORS.2 <- polr(AWORTHLESS ~ INCTOT + INCTOT2, data = panel, Hess = TRUE)
 
 QINTR.2 <- polr(PHQINTR ~ INCTOT + INCTOT2, data = panel, Hess = TRUE)
 
-stargazer(QDEP.2,AEFT.2,AHOPS.2,ARES.2,ASAD.2,AWORS.2,QINTR.2,apply.coef = exp,style = "qje",ord.intercepts = "TRUE")
+aicVals <- AIC(QDEP.2)
+aicVals <- c(AIC(AEFT.2),aicVals)
+aicVals <- c(AIC(AHOPS.2),aicVals)
+aicVals <- c(AIC(ARES.2),aicVals)
+aicVals <- c(AIC(ASAD.2),aicVals)
+aicVals <- c(AIC(AWORS.2),aicVals)
+aicVals <- c(AIC(QINTR.2),aicVals)
+
+print(aicVals)
+
+stargazer(QDEP.2,QINTR.2,AEFT.2,AHOPS.2,ARES.2,ASAD.2,AWORS.2,apply.coef = exp,style = "qje", keep.stat = "res.dev",type = "text",add.lines = c(c('1','2'),c('1','3')))
+
+stargazer(QDEP.2,QINTR.2,AEFT.2,AHOPS.2,ARES.2,ASAD.2,AWORS.2,style = "qje",apply.coef = exp, type = "text")
+
+
 
 ```
 Here shows initial fitting of the ordinal logit with controls .
@@ -141,11 +155,64 @@ QINTR.3 <-polr(PHQINTR ~ INCTOT + INCTOT2 + FTOTINCMEPS + FTOTINCMEPS2 + YEAR + 
                          EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                        data = panel, Hess = TRUE)
 
+aicVals <- AIC(QDEP.3)
+aicVals <- c(AIC(AEFT.3),aicVals)
+aicVals <- c(AIC(AHOPS.3),aicVals)
+aicVals <- c(AIC(ARES.3),aicVals)
+aicVals <- c(AIC(ASAD.3),aicVals)
+aicVals <- c(AIC(AWORS.3),aicVals)
+aicVals <- c(AIC(QINTR.3),aicVals)
+
+print(aicVals)
+
 stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, apply.coef = exp,style = "qje")
 
 keep.1 <- c("INCTOT","FTOTINCMEPS","SEX2","MARSTAT30","HEALTH5","EDUC400","SMOKENOW2","RACE200","CANCEREV2","INVERVLANG2","ANERVOUS1","INCTOT2","FTOTINCMEPS2")
-stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, keep = keep.1,apply.coef = exp,style = "qje",ord.intercepts = "TRUE")
+stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, keep = keep.1,apply.coef = exp,style = "qje")
 ```
+
+```{r Models 1 -- non quadratic}
+QDEP.3Ln <- polr(PHQDEP ~ INCTOT +  FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                  EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE +ANERVOUS,
+                  data = panel, Hess = TRUE)
+summary(QDEP.3)
+AEFT.3Ln <-polr(AEFFORT ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                           EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                          data = panel, Hess = TRUE)
+AHOPS.3Ln <-polr(AHOPELESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+ARES.3Ln <-polr(ARESTLESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+ASAD.3Ln <-polr(ASAD ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+AWORS.3Ln <-polr(AWORTHLESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+QINTR.3Ln <-polr(PHQINTR ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+                         EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
+                       data = panel, Hess = TRUE)
+
+aicVals <- AIC(QDEP.3Ln)
+aicVals <- c(AIC(AEFT.3Ln),aicVals)
+aicVals <- c(AIC(AHOPS.3Ln),aicVals)
+aicVals <- c(AIC(ARES.3Ln),aicVals)
+aicVals <- c(AIC(ASAD.3Ln),aicVals)
+aicVals <- c(AIC(AWORS.3Ln),aicVals)
+aicVals <- c(AIC(QINTR.3Ln),aicVals)
+
+stargazer(QDEP.3Ln ,QINTR.3Ln,AEFT.3Ln,AHOPS.3Ln,ARES.3Ln,ASAD.3Ln,AWORS.3Ln, apply.coef = exp,style = "qje")
+
+keep.1 <- c("INCTOT","FTOTINCMEPS","SEX2","MARSTAT30","HEALTH5","EDUC400","SMOKENOW2","RACE200","CANCEREV2","INVERVLANG2","ANERVOUS1","INCTOT2","FTOTINCMEPS2")
+stargazer(QDEP.3Ln ,QINTR.3Ln,AEFT.3Ln ,AHOPS.3Ln,ARES.3Ln,ASAD.3Ln,AWORS.3Ln, keep = keep.1,apply.coef = exp,style = "qje")
+
+
+
+```
+
+
 It is here that an instrumental variable is incorporated to minimize OVB for personal income gains, this instrument is aimed at income totals. Data with the IV is moved around to prevent polr from receiving an incomplete data set, something which it cannot deal with. 
 ```{r Models 2}
 # Employing an instrument into above fitted model for Income total
@@ -186,6 +253,15 @@ QINTR.4 <-polr(PHQINTR ~  fracfaminc.hat + fracfaminc.hat2 + FTOTINCMEPS + FTOTI
                  EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                data = panel.2, Hess = TRUE)
 
+aicVals <- AIC(QDEP.4)
+aicVals <- c(AIC(AEFT.4),aicVals)
+aicVals <- c(AIC(AHOPS.4),aicVals)
+aicVals <- c(AIC(ARES.4),aicVals)
+aicVals <- c(AIC(ASAD.4),aicVals)
+aicVals <- c(AIC(AWORS.4),aicVals)
+aicVals <- c(AIC(QINTR.4),aicVals)
+
+print(aicVals)
 
 stargazer(QDEP.4,QINTR.4,AEFT.4,AHOPS.4,ARES.4,ASAD.4,AWORS.4, apply.coef = exp,style = "qje")
 
@@ -228,6 +304,15 @@ QINTR.5 <-polr(PHQINTR ~ INCTOT + INCTOT2 +  capGains.hat + capGains.hat2 + YEAR
                  EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                data = panel.2, Hess = TRUE)
 
+aicVals <- AIC(QDEP.5)
+aicVals <- c(AIC(AEFT.5),aicVals)
+aicVals <- c(AIC(AHOPS.5),aicVals)
+aicVals <- c(AIC(ARES.5),aicVals)
+aicVals <- c(AIC(ASAD.5),aicVals)
+aicVals <- c(AIC(AWORS.5),aicVals)
+aicVals <- c(AIC(QINTR.5),aicVals)
+
+print(aicVals)
 
 stargazer(QDEP.5,QINTR.5,AEFT.5,AHOPS.5,ARES.5,ASAD.5,AWORS.5, apply.coef = exp,style = "qje")
 

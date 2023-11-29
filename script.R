@@ -304,4 +304,17 @@ QDEP.3 <- Filter(Negate(is.language), QDEP.3)
 sapply(QDEP.3, is.infinite)
 sapply(QDEP.3, is.nan)
 
+
+# a density plot of INCTOT
+
+ggplot(panel, aes(x=INCTOT)) + 
+         geom_density() +   
+         scale_x_continuous(trans='log10')
+
+# a density plot of FamINCTOT
+
+ggplot(panel, aes(x=FTOTINCMEPS)) + 
+  geom_density() +   
+  scale_x_continuous(trans='log10')
 #ord.intercepts = FALSE
+#digits.extra
