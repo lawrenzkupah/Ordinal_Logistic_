@@ -12,7 +12,7 @@ require(reshape2)
 require(Hmisc)
 require(readr)
 require(RColorBrewer)
-panel <- read_csv("/Users/cooperlawrenz/Documents/School Fall 2023/Thesis/Data/Extract Aug 1 2023/panel.csv")
+panel <- read_csv("/Users/cooperlawrenz/Documents/School_Fall_2023/Thesis/Data/Extract Aug 1 2023/panel.csv")
 panel.2 <- panel[, names(panel) %in% c("INCTOT","FTOTINCMEPS","YEAR","REGIONMEPS","SEX","MARSTAT","HEALTH",
                                        "EDUC","SMOKENOW","RACEA","CANCEREV","INTERVLANG","FAMSIZE","ANERVOUS",
                                        "fracfamInc","capGains","fraccapgains","PHQDEP","AHOPELESS","ASAD","AWORTHLESS","AEFFORT","ARESTLESS","PHQINTR")]
@@ -76,7 +76,8 @@ panel$OCCCATRD <- as.factor(panel$OCCCATRD) #Maybe dont use b/c of DF loss
 panel$CANCEREV <- as.factor(panel$CANCEREV)
 panel$INSULIN <- as.factor(panel$INSULIN)
 panel$INTERVLANG <- as.factor(panel$INTERVLANG)
-
+panel$INCTOT <- panel$INCTOT/10 
+panel$FTOTINCMEPS <- panel$FTOTINCMEPS/10 #this is per 10,000
 ```
 Here shows initial fitting of ordinal logit w/o controls 
 ```{r model .5}
@@ -95,6 +96,19 @@ AWORS.2 <- polr(AWORTHLESS ~ INCTOT, data = panel, Hess = TRUE)
 
 QINTR.2 <- polr(PHQINTR ~ INCTOT, data = panel, Hess = TRUE)
 
+stargazer(QDEP.2,QINTR.2,AEFT.2,AHOPS.2,ARES.2,ASAD.2,AWORS.2,apply.coef = exp,style = "qje",ci = T,p.auto = F)
+
+print(AIC(QDEP.2))
+print(AIC(AEFT.2))
+print(AIC(AHOPS.2))
+print(AIC(ARES.2))
+print(AIC(ASAD.2))
+print(AIC(AWORS.2))
+print(AIC(QINTR.2))
+
+
+
+print(aicVals)
 
 ```
 Here shows initial fitting of the ordinal logit with controls .
