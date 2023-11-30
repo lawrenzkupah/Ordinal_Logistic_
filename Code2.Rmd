@@ -82,14 +82,35 @@ panel$INTERVLANG <- as.factor(panel$INTERVLANG)
 ```
 Here shows initial fitting of ordinal logit w/o controls 
 ```{r model .5}
-panel$INCTOT <- panel$INCTOT/10
+panel$INCTOT <- panel$INCTOT/10 #(data is alredy divided by 100, adding another 10, because otherwise summary doesnt want to compute)
 panel$INCTOT2 <- panel$INCTOT^2
 
 panel$FTOTINCMEPS <- panel$FTOTINCMEPS/10
 panel$FTOTINCMEPS2 <- panel$FTOTINCMEPS^2
 
+
+
 QDEP.2 <- polr(PHQDEP ~ INCTOT + INCTOT2, data = panel, Hess = TRUE)
 summary(QDEP.2)
+
+
+#Between here is just me testing things 
+se.coef <- function(glm.output){sqrt(diag(vcov(glm.output)))}
+
+OR <- exp(coef(QDEP.2))
+Std.Error.OR_QDEP.2 <-  OR * se.coef(QDEP.2)
+Std.Error.OR_QDEP.2
+stargazer((QDEP.2),apply.coef = exp,style = "qje",type = "text",p.auto = F,t.auto = F,se = list(Std.Error.OR_QDEP.2)) #w/ SE
+
+#seeing what a summary of QDEP.2 looks like 
+st <- summary(QDEP.2)
+p.values <- list(summary(QDEP.2)$coefficients[,3])
+p.values
+
+stargazer((QDEP.2),apply.coef = exp,style = "qje",type = "text",p.auto = F,t.auto = F, #try CI's
+ ci = T)
+
+#----------------------------------
 
 AEFT.2 <- polr(AEFFORT ~ INCTOT + INCTOT2, data = panel, Hess = TRUE)
 
@@ -113,10 +134,11 @@ aicVals <- c(AIC(QINTR.2),aicVals)
 
 print(aicVals)
 
-stargazer(QDEP.2,QINTR.2,AEFT.2,AHOPS.2,ARES.2,ASAD.2,AWORS.2,apply.coef = exp,style = "qje", keep.stat = "res.dev",type = "text",add.lines = c(c('1','2'),c('1','3')))
+print('QDEP.2  AEFT.2  AHOPS.2  ARES.2  ASAD.2  AWORS.2  QINTR.2')
 
-stargazer(QDEP.2,QINTR.2,AEFT.2,AHOPS.2,ARES.2,ASAD.2,AWORS.2,style = "qje",apply.coef = exp, type = "text")
+stargazer(QDEP.2,QINTR.2,AEFT.2,AHOPS.2,ARES.2,ASAD.2,AWORS.2,apply.coef = exp,style = "qje",ci = T,p.auto = F)
 
+stargazer(QDEP.2,QINTR.2,AEFT.2,AHOPS.2,ARES.2,ASAD.2,AWORS.2,apply.coef = exp,style = "qje", type = 'text', ci = T, p.auto = F)
 
 
 ```
@@ -163,52 +185,59 @@ aicVals <- c(AIC(ASAD.3),aicVals)
 aicVals <- c(AIC(AWORS.3),aicVals)
 aicVals <- c(AIC(QINTR.3),aicVals)
 
+print('QDEP.3  AEFT.3  AHOPS.3  ARES.3  ASAD.3  AWORS.3  QINTR.3')
+
 print(aicVals)
 
-stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, apply.coef = exp,style = "qje")
+stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, apply.coef = exp,style = "qje",ci=T, p.auto= F)
 
 keep.1 <- c("INCTOT","FTOTINCMEPS","SEX2","MARSTAT30","HEALTH5","EDUC400","SMOKENOW2","RACE200","CANCEREV2","INVERVLANG2","ANERVOUS1","INCTOT2","FTOTINCMEPS2")
-stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, keep = keep.1,apply.coef = exp,style = "qje")
+stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, keep = keep.1,apply.coef = exp,style = "qje",ci = T, p.auto = F)
+
+stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, keep = keep.1,apply.coef = exp,style = "qje",ci = T, p.auto = F,type= "text")
 ```
 
 ```{r Models 1 -- non quadratic}
-QDEP.3Ln <- polr(PHQDEP ~ INCTOT +  FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+QDEP.3 <- polr(PHQDEP ~ INCTOT +  FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
                   EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE +ANERVOUS,
                   data = panel, Hess = TRUE)
-summary(QDEP.3)
-AEFT.3Ln <-polr(AEFFORT ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+AEFT.3 <-polr(AEFFORT ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
                            EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                           data = panel, Hess = TRUE)
-AHOPS.3Ln <-polr(AHOPELESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+AHOPS.3 <-polr(AHOPELESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
                          EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                        data = panel, Hess = TRUE)
-ARES.3Ln <-polr(ARESTLESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+ARES.3 <-polr(ARESTLESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
                          EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                        data = panel, Hess = TRUE)
-ASAD.3Ln <-polr(ASAD ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+ASAD.3 <-polr(ASAD ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
                          EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                        data = panel, Hess = TRUE)
-AWORS.3Ln <-polr(AWORTHLESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+AWORS.3 <-polr(AWORTHLESS ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
                          EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                        data = panel, Hess = TRUE)
-QINTR.3Ln <-polr(PHQINTR ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
+QINTR.3 <-polr(PHQINTR ~ INCTOT + FTOTINCMEPS + YEAR + REGIONMEPS +SEX + MARSTAT + HEALTH + 
                          EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                        data = panel, Hess = TRUE)
 
-aicVals <- AIC(QDEP.3Ln)
-aicVals <- c(AIC(AEFT.3Ln),aicVals)
-aicVals <- c(AIC(AHOPS.3Ln),aicVals)
-aicVals <- c(AIC(ARES.3Ln),aicVals)
-aicVals <- c(AIC(ASAD.3Ln),aicVals)
-aicVals <- c(AIC(AWORS.3Ln),aicVals)
-aicVals <- c(AIC(QINTR.3Ln),aicVals)
+aicVals <- AIC(QDEP.3)
+aicVals <- c(AIC(AEFT.3),aicVals)
+aicVals <- c(AIC(AHOPS.3),aicVals)
+aicVals <- c(AIC(ARES.3),aicVals)
+aicVals <- c(AIC(ASAD.3),aicVals)
+aicVals <- c(AIC(AWORS.3),aicVals)
+aicVals <- c(AIC(QINTR.3),aicVals)
 
-stargazer(QDEP.3Ln ,QINTR.3Ln,AEFT.3Ln,AHOPS.3Ln,ARES.3Ln,ASAD.3Ln,AWORS.3Ln, apply.coef = exp,style = "qje")
+print('QDEP.3  AEFT.3  AHOPS.3  ARES.3  ASAD.3  AWORS.3  QINTR.3')
+
+aicVals
+
+stargazer(QDEP.3,QINTR.3,AEFT.3,AHOPS.3,ARES.3,ASAD.3,AWORS.3, apply.coef = exp, style = "qje")
 
 keep.1 <- c("INCTOT","FTOTINCMEPS","SEX2","MARSTAT30","HEALTH5","EDUC400","SMOKENOW2","RACE200","CANCEREV2","INVERVLANG2","ANERVOUS1","INCTOT2","FTOTINCMEPS2")
-stargazer(QDEP.3Ln ,QINTR.3Ln,AEFT.3Ln ,AHOPS.3Ln,ARES.3Ln,ASAD.3Ln,AWORS.3Ln, keep = keep.1,apply.coef = exp,style = "qje")
+stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, keep = keep.1,apply.coef = exp,style = "qje", ci = T,p.auto = F)
 
-
+stargazer(QDEP.3 ,QINTR.3,AEFT.3 ,AHOPS.3,ARES.3,ASAD.3,AWORS.3, keep = keep.1,apply.coef = exp,style = "qje", ci = T,p.auto = F, type = 'text')
 
 ```
 
@@ -261,13 +290,17 @@ aicVals <- c(AIC(ASAD.4),aicVals)
 aicVals <- c(AIC(AWORS.4),aicVals)
 aicVals <- c(AIC(QINTR.4),aicVals)
 
+print('QDEP.4  AEFT.4  AHOPS.4  ARES.4  ASAD.4  AWORS.4  QINTR.4')
+
 print(aicVals)
 
-stargazer(QDEP.4,QINTR.4,AEFT.4,AHOPS.4,ARES.4,ASAD.4,AWORS.4, apply.coef = exp,style = "qje")
+stargazer(QDEP.4,QINTR.4,AEFT.4,AHOPS.4,ARES.4,ASAD.4,AWORS.4, apply.coef = exp,style = "qje", ci=T, p.auto= F)
 
 
 keep.2 <- c("INCTOT","FTOTINCMEPS","SEX2","MARSTAT30","HEALTH5","EDUC400","SMOKENOW2","RACE200","CANCEREV2","INVERVLANG2","ANERVOUS1","fracfaminc.hat","fracfaminc.hat2","FTOTINCMEPS2")
-stargazer(QDEP.4,QINTR.4,AEFT.4,AHOPS.4,ARES.4,ASAD.4,AWORS.4, keep = keep.2,apply.coef = exp,style = "qje",ord.intercepts = "TRUE")
+stargazer(QDEP.4,QINTR.4,AEFT.4,AHOPS.4,ARES.4,ASAD.4,AWORS.4, keep = keep.2,apply.coef = exp,style = "qje", ci = T,p.auto = F)
+
+stargazer(QDEP.4,QINTR.4,AEFT.4,AHOPS.4,ARES.4,ASAD.4,AWORS.4, keep = keep.2,apply.coef = exp,style = "qje", ci = T,p.auto = F, type = 'text')
 ```
 Same as prior snippet, however this time an instrument is being used for family income gains. 
 ```{r Models 3}
@@ -304,6 +337,9 @@ QINTR.5 <-polr(PHQINTR ~ INCTOT + INCTOT2 +  capGains.hat + capGains.hat2 + YEAR
                  EDUC + SMOKENOW + RACEA + CANCEREV + INTERVLANG + FAMSIZE + ANERVOUS,
                data = panel.2, Hess = TRUE)
 
+
+
+
 aicVals <- AIC(QDEP.5)
 aicVals <- c(AIC(AEFT.5),aicVals)
 aicVals <- c(AIC(AHOPS.5),aicVals)
@@ -312,12 +348,16 @@ aicVals <- c(AIC(ASAD.5),aicVals)
 aicVals <- c(AIC(AWORS.5),aicVals)
 aicVals <- c(AIC(QINTR.5),aicVals)
 
+print('QDEP.5  AEFT.5  AHOPS.5  ARES.5  ASAD.5  AWORS.5  QINTR.5')
+
 print(aicVals)
 
-stargazer(QDEP.5,QINTR.5,AEFT.5,AHOPS.5,ARES.5,ASAD.5,AWORS.5, apply.coef = exp,style = "qje")
+stargazer(QDEP.5,QINTR.5,AEFT.5,AHOPS.5,ARES.5,ASAD.5,AWORS.5, apply.coef = exp,style = "qje",ci=T, p.auto= F)
 
 keep.3 <- c("INCTOT","FTOTINCMEPS","SEX2","MARSTAT30","HEALTH5","EDUC400","SMOKENOW2","RACE200","CANCEREV2","INVERVLANG2","ANERVOUS1","capGains.hat","fraccapgains","INCTOT2","capGains.hat2")
-stargazer(QDEP.5,QINTR.5,AEFT.5,AHOPS.5,ARES.5,ASAD.5,AWORS.5, keep = keep.3,apply.coef = exp,style = "qje",ord.intercepts = "TRUE")
+stargazer(QDEP.5,QINTR.5,AEFT.5,AHOPS.5,ARES.5,ASAD.5,AWORS.5, keep = keep.3,apply.coef = exp,style = "qje", ci = T,p.auto = F)
+
+stargazer(QDEP.5,QINTR.5,AEFT.5,AHOPS.5,ARES.5,ASAD.5,AWORS.5, keep = keep.3,apply.coef = exp,style = "qje", ci = T,p.auto = F, type = 'text')
 
 ```
 To better understand the proportional odds assumption this table is made. it computes logits at different cut-off points for both income total and family income total. perfectly passing this test would be a perfect vertical line made by each data point. Obviously, this does not occur, the question then becomes what impact does this have on the interpretation of results?
